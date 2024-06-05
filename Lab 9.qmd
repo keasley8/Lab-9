@@ -1,0 +1,72 @@
+---
+title: "Lab 9"
+author: "Kai Easley"
+format: html
+editor: visual
+---
+
+## Website Code
+
+```{r}
+library(ggplot2)
+library(tibble)
+library(scales)
+library(ggthemes)
+```
+
+
+
+## First Art Piece
+
+```{r}
+#Making a function polar_art based on the inputs seed, n, and palette
+#Using the dat data set to make a function based out of these variables
+
+first_art <- function(seed, n, palette) {
+  
+  # set the seed of the random number generator
+  set.seed(seed)
+  
+  #Making a randomly generated data set
+  dat <- tibble(
+    #using rnorm() to get a different distribution of values
+    x0 = rnorm(n),
+    y0 = rnorm(n),
+    x1 = x0 + runif(n, min = -15, max = 15),
+    y1 = y0 + runif(n, min = -1, max = 50),
+    shade = runif(n), 
+    size = runif(n)
+  )
+  
+  #Plotting the randomly generated data set
+  dat |> 
+    ggplot(aes(
+      x = x0,
+      y = y0,
+      xend = x1,
+      yend = y1,
+      fill = shade,
+      size = size
+    )) +
+    #Using geom_tile() to graph 
+    geom_tile(width =3, height = 150, show.legend = FALSE) +
+    #Flipping the coordinates to create a more round shape
+    coord_polar() +
+    scale_fill_gradientn(colours = palette) +
+    #Getting rid of the grid/theme so that it doesn't distract from the art
+    theme_void() +
+    ggtitle("First Art") +
+    #Formatting the title
+    theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", 
+                                    face="bold", size=32, hjust=0))
+  #title formatting gotten from https://www.r-bloggers.com/2015/01/how-to-format-your-chart-and-axis-titles-in-ggplot2/
+}
+
+```
+
+
+
+```{r}
+#Using the function to make art
+first_art(seed = 1, n = 300, palette = c("darkgreen", "red", "blue"))
+```
