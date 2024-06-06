@@ -1,8 +1,19 @@
 ---
 title: "Lab 9"
 author: "Kai Easley"
-format: html
+format: 
+  html: 
+    self-contained: true
+    code-tools: true
+    code-fold: true
 editor: visual
+execute: 
+  echo: true
+  include: true
+  message: false
+  warning: false
+embed-resources: true
+theme: cerulean
 ---
 
 ## Website Code
@@ -13,9 +24,6 @@ library(tibble)
 library(scales)
 library(ggthemes)
 ```
-
-
-
 ## First Art Piece
 
 ```{r}
@@ -55,7 +63,7 @@ first_art <- function(seed, n, palette) {
     scale_fill_gradientn(colours = palette) +
     #Getting rid of the grid/theme so that it doesn't distract from the art
     theme_void() +
-    ggtitle("First Art") +
+    ggtitle("Circus Tent") +
     #Formatting the title
     theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", 
                                     face="bold", size=32, hjust=0))
@@ -70,3 +78,88 @@ first_art <- function(seed, n, palette) {
 #Using the function to make art
 first_art(seed = 1, n = 300, palette = c("darkgreen", "red", "blue"))
 ```
+We see that each tile gets narrower as it rises, and that they all meet together 
+at the same point at the top. With a colorful variety of patterns and color
+schemes, we can see that it can resemble a circus tent. In the code, we set the
+color palette to include the colors red, blue, and green. "n" is set to 300,
+meaning that we get 300 values in our data set to be plotted. The code is set
+so that x1 and y1 have a uniform distribution and x0 and y0 have a normal 
+distribution of the 300 values. In geom_tile() the shape is adjusted using the
+width and height arguments of the function.
+
+
+## Second Art Piece
+
+
+```{r}
+# Function to generate circle data
+circle <- function(center = c(0, 0), radius = 1, points = 100) {
+  #Use of ChatGPT to help with the length.out portion of the code
+  angles <- seq(0, 2 * pi, length.out = points)
+  circle_data <- data.frame(
+    x = center[1] + radius * cos(angles),
+    y = center[2] + radius * sin(angles)
+  )
+  return(circle_data)
+}
+
+```
+
+
+```{r}
+# Function to generate five circles in specific locations
+five_circles <- function(centers, radii, points = 100) {
+  if(length(centers) != 5 || length(radii) != 5) {
+    stop("Provide exactly five centers and five radii.")
+    #This makes sure there is a correct amount of inputs for the circles
+  }
+  #Use of an lapply to iterate from 1-5 for the five circles
+  circles_list <- lapply(1:5, function(i) {
+    #Function of i (1-5) that takes in the ith element of the respective
+    #centers and radii
+    circle_data <- circle(center = centers[[i]], radius = radii[i], 
+                                   points = points)
+    #Use of Chat GPT for this next line of code, helped me figure out that
+    #I needed to save an id column (i) to circle_data to identify which
+    #circle the points belong to in the data set
+    circle_data$id <- i
+    return(circle_data)
+  })
+  
+  circles_data <- do.call(rbind, circles_list)
+  #The website that helped me with the do.call(): https://www.geeksforgeeks.org/how-to-use-do-call-in-r/
+  return(circles_data)
+}
+
+# Define centers and radii for five circles
+centers <- list(c(-.6, -.45), c(.6, -.45), c(-1.1, 0), c(1.1, 0), c(0, 0))
+radii <- c(0.5, 0.5, 0.5, 0.5, 0.5)
+
+# Generate data for five circles using the five_circles function
+five_circles_data <- five_circles(centers, radii, points = 100)
+
+```
+
+```{r}
+color <- c("yellow", "green", "blue", "red", "black")
+# Creating the plotted circles
+ggplot(five_circles_data, aes(x = x, y = y, group = id, color = as.factor(id))) +
+  geom_polygon(fill = NA, size = 4) +
+  scale_color_manual(values = color) +
+  coord_fixed() +
+  theme_void() +
+  theme(legend.position = "none") +
+  ggtitle("Olympic Rings") +
+  theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", 
+                                    face="bold", size=30, hjust=0))
+#Link is also in the first art piece but title formatting gotten from https://www.r-bloggers.com/2015/01/how-to-format-your-chart-and-axis-titles-in-ggplot2/
+```
+Pictured above are the Olympic rings. Each circle is properly spaced apart and
+looped through the correct circles, as well as given enough thickness on 
+the circles' outline. The thickness was adjusted using the "size" specification
+in the geom_polygon() statement. In the functions, we set the points value to 
+100, meaning that each circle has 100 plotted points on it. We then label
+each set of 100 points by its respective circle number 1-5, which can be seen
+in the data set five_circles_data. We then plot each circle, grouping by its
+"id" variable in five_circles_data. The color is specified before the plot
+is coded, each color of the circles being in the correct place. 
